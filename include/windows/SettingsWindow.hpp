@@ -34,13 +34,19 @@ private:
     Glib::ustring error_details = "";
   };
 
+  Gtk::Label *m_status_badge = nullptr;
+  Gtk::Button *m_ext_btn = nullptr;
+  Gtk::ListBoxRow *m_paste_row = nullptr;
+
+  void refresh_extension_status();
   ExtensionStatus get_emojify_status();
   void setup_list();
   void setup_bindings();
-  void setup_extension_section(const ExtensionStatus &status);
+  void setup_extension_section();
   void setup_behavior_section();
   void setup_appearance_section();
   void setup_system_section();
+  void on_show();
   Gtk::ListBox *make_section(const Glib::ustring &title);
   Gtk::ListBoxRow *make_row(const Glib::ustring &title,
                             const Glib::ustring &subtitle, Gtk::Widget &widget);

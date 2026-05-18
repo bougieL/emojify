@@ -18,6 +18,13 @@ SettingsWindow::SettingsWindow() {
 
   setup_list();
   setup_bindings();
+  property_is_active().signal_changed().connect(
+      [this]() { refresh_extension_status(); });
+}
+void SettingsWindow::on_show() {
+  g_print("ran");
+  Gtk::Window::on_show();
+  refresh_extension_status();
 }
 
 SettingsWindow::ExtensionStatus SettingsWindow::get_emojify_status() {
@@ -115,15 +122,9 @@ Gtk::ListBoxRow *SettingsWindow::make_row(const Glib::ustring &title,
   row->set_child(*hbox);
   return row;
 }
+void SettingsWindow::refresh_extension_status() {
+  auto status = get_emojify_status();
 
-void SettingsWindow::setup_extension_section(const ExtensionStatus &status) {
-  auto *list = make_section("Extension");
-
-  auto *paste_box =
-      Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 8);
-  paste_box->set_valign(Gtk::Align::CENTER);
-
-  auto *badge = Gtk::make_managed<Gtk::Label>();
   Glib::ustring badge_text;
   Glib::ustring badge_css;
 
@@ -147,53 +148,69 @@ void SettingsWindow::setup_extension_section(const ExtensionStatus &status) {
     break;
   }
 
-  badge->set_text(badge_text);
-  badge->get_style_context()->add_class(badge_css);
-  badge->get_style_context()->add_class("caption");
-  badge->set_valign(Gtk::Align::CENTER);
+  m_status_badge->set_text(badge_text);
+  for (auto cls : {"success", "warning", "error"})
+    m_status_badge->get_style_context()->remove_class(cls);
+  m_status_badge->get_style_context()->add_class(badge_css);
 
   if (!status.error_details.empty())
-    badge->set_tooltip_text(status.error_details);
+    m_status_badge->set_tooltip_text(status.error_details);
 
+  bool installed = status.state == ExtensionState::ENABLED;
+  m_ext_btn->set_sensitive(!installed);
+
+  m_paste_row->set_tooltip_text(
+      status.is_enabled ? "Extension is active — paste on select is available"
+                        : "Install and enable the Emojify GNOME Shell "
+                          "extension to use this feature");
+
+  auto *btn_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 6);
+  auto *icon = Gtk::make_managed<Gtk::Image>();
+  auto *label =
+      Gtk::make_managed<Gtk::Label>(installed ? "Installed" : "Get Extension");
+  icon->set_from_icon_name(installed ? "emblem-ok-symbolic"
+                                     : "adw-external-link-symbolic");
+  btn_box->append(*icon);
+  btn_box->append(*label);
+  m_ext_btn->set_child(*btn_box);
+  m_ext_btn->set_sensitive(!installed);
+}
+void SettingsWindow::setup_extension_section() {
+  auto *list = make_section("Extension");
+
+  auto *paste_box =
+      Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 8);
+  paste_box->set_valign(Gtk::Align::CENTER);
+
+  m_status_badge = Gtk::make_managed<Gtk::Label>();
+  m_status_badge->get_style_context()->add_class("caption");
+  m_status_badge->set_valign(Gtk::Align::CENTER);
   m_paste_switch.set_valign(Gtk::Align::CENTER);
-  paste_box->append(*badge);
+
+  paste_box->append(*m_status_badge);
   paste_box->append(m_paste_switch);
 
-  auto *paste_row =
+  m_paste_row =
       make_row("Paste automatically",
                "Paste the selected emoji directly into the focused window "
                "(requires the GNOME Shell extension)",
                *paste_box);
-  paste_row->set_tooltip_text(
-      status.is_enabled ? "Extension is active — paste on select is available"
-                        : "Install and enable the Emojify GNOME Shell "
-                          "extension to use this feature");
-  list->append(*paste_row);
+  list->append(*m_paste_row);
 
-  auto *btn_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 6);
-  auto *btn_label = Gtk::make_managed<Gtk::Label>(
-      status.state == ExtensionState::ENABLED ? "Installed" : "Get Extension");
-  auto *btn_icon = Gtk::make_managed<Gtk::Image>();
-  btn_icon->set_from_icon_name(status.state == ExtensionState::ENABLED
-                                   ? "emblem-ok-symbolic"
-                                   : "adw-external-link-symbolic");
-  btn_box->append(*btn_icon);
-  btn_box->append(*btn_label);
-
-  auto *ext_btn = Gtk::make_managed<Gtk::Button>();
-  ext_btn->set_child(*btn_box);
-  ext_btn->set_valign(Gtk::Align::CENTER);
-  ext_btn->set_sensitive(status.state != ExtensionState::ENABLED);
-  ext_btn->signal_clicked().connect([]() {
+  m_ext_btn = Gtk::make_managed<Gtk::Button>();
+  m_ext_btn->set_valign(Gtk::Align::CENTER);
+  m_ext_btn->signal_clicked().connect([]() {
     Gio::AppInfo::launch_default_for_uri(EXTENSION_URL,
                                          Glib::RefPtr<Gio::AppLaunchContext>());
   });
 
-  list->append(*make_row(
-      "GNOME Shell Extension",
-      "Required for automatic pasting — opens extensions.gnome.org", *ext_btn));
-}
+  list->append(
+      *make_row("GNOME Shell Extension",
+                "Required for automatic pasting — opens extensions.gnome.org",
+                *m_ext_btn));
 
+  refresh_extension_status();
+}
 void SettingsWindow::setup_behavior_section() {
   auto *list = make_section("Behavior");
 
@@ -279,9 +296,7 @@ void SettingsWindow::setup_system_section() {
 }
 
 void SettingsWindow::setup_list() {
-  auto status = get_emojify_status();
-
-  setup_extension_section(status);
+  setup_extension_section();
   setup_behavior_section();
   setup_appearance_section();
   setup_system_section();
