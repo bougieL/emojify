@@ -21,9 +21,27 @@ private:
   Gtk::ListBoxRow *m_timeout_row{nullptr};
   Gtk::ListBoxRow *m_column_row{nullptr};
 
+  enum class ExtensionState {
+    NOT_INSTALLED = 0,
+    ENABLED = 1,
+    DISABLED = 2,
+    ERROR = 3,
+    UNKNOWN = -1
+  };
+  struct ExtensionStatus {
+    ExtensionState state = ExtensionState::NOT_INSTALLED;
+    bool is_enabled = false;
+    Glib::ustring error_details = "";
+  };
+
+  ExtensionStatus get_emojify_status();
   void setup_list();
   void setup_bindings();
-  void setup_shortcut_hint();
+  void setup_extension_section(const ExtensionStatus &status);
+  void setup_behavior_section();
+  void setup_appearance_section();
+  void setup_system_section();
+  Gtk::ListBox *make_section(const Glib::ustring &title);
   Gtk::ListBoxRow *make_row(const Glib::ustring &title,
                             const Glib::ustring &subtitle, Gtk::Widget &widget);
 };
