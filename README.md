@@ -8,11 +8,23 @@
 
 ![Main Screenshot](screenshots/main_window.png)
 
+## Support Me
+
+<a href="https://ko-fi.com/riothedev" target="_blank">
+  <img src="https://storage.ko-fi.com/cdn/brandasset/kofi_button_red.png" alt="Buy Me a Coffee at ko-fi.com" height="36" />
+</a>
+
 ## ✨ Features
 
-- 🚀 **Native Performance**: Written in C++ for near-instant startup and low memory footprint.
+- 🚀 **Native Performance**: Written in C++ for near-instant startup and low memory footprint.'
 - 🎨 **Modern Interface**: Fully supports system dark/light modes and adaptive layouts.
 - 🔒 **Privacy Focused**: No tracking, no telemetry, and zero network calls.
+
+## Paste Automatically (Gnome extension)
+
+The **Paste Automatically** feature requires the companion GNOME Shell extension to be installed and enabled.
+Without the extension, Emojify will still work normally, but automatic pasting into the currently focused window will not be available.
+You can find it on [Gnome Extensions](https://extensions.gnome.org/extension/9987/emojify-bridge/)
 
 ## 🛠 Installation
 
@@ -109,7 +121,7 @@ Contributions are welcome! Whether it's fixing a bug or adding a feature:
 
 ## 📄 License
 
-Distributed under the **GPL-3.0-or-later** License. See `LICENSE` for more information.
+Distributed under the **GPL-3.0-or-later** License. See `LICENSE.md` for more information.
 
 ---
 
