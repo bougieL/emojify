@@ -5,7 +5,7 @@ pkgrel=1
 arch=('x86_64')
 url="https://github.com/RioTheDev/emojify"
 license=('GPL3')
-depends=('gtkmm-4.0' 'glibmm-2.68' 'libadwaita')
+depends=('gtkmm-4.0' 'glibmm-2.68' 'libadwaita' 'wl-clipboard')
 
 sha256sums=(
   "$_checksum"  # for emojify-${_checksum}.tar.gz
