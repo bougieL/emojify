@@ -22,7 +22,6 @@ SettingsWindow::SettingsWindow() {
       [this]() { refresh_extension_status(); });
 }
 void SettingsWindow::on_show() {
-  g_print("ran");
   Gtk::Window::on_show();
   refresh_extension_status();
 }

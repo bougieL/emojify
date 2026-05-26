@@ -275,7 +275,7 @@ void EmojiWindow::on_search_changed() {
   auto execute_logic = [this, query]() {
     clear_grid();
 
-    if (query.empty()) {
+    if (query.empty() || query.size() <= 1) {
       if (currentTab == 0)
         populate_grid_recent();
       else
@@ -301,11 +301,14 @@ void EmojiWindow::on_search_changed() {
 
     return false;
   };
-  if (connection)
-    connection.disconnect();
 
-  connection = Glib::signal_timeout().connect(
-      [execute_logic]() { return execute_logic(); }, 300);
+  // if (connection)
+  //   connection.disconnect();
+
+  // connection = Glib::signal_timeout().connect(
+  //     [execute_logic]() { return execute_logic(); }, 100);
+
+  execute_logic();
 }
 
 void EmojiWindow::on_settings_clicked() {
