@@ -268,7 +268,8 @@ void EmojiWindow::on_emoji_clicked(EmojiManager::EmojiEntry e) {
 }
 void EmojiWindow::on_search_changed() {
   std::string query = m_search_entry.get_text();
-  std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+  std::transform(query.begin(), query.end(), query.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
 
   static sigc::connection connection;
 

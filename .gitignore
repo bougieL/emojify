@@ -2,6 +2,7 @@ build
 tools/en.xml
 tools/emoji-test.txt
 tools/emoji_data.bin
+tools/zh.xml
 .vscode
 .flatpak-builder
 repo

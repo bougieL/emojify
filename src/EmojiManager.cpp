@@ -186,7 +186,8 @@ std::string EmojiManager::get_display_character(const EmojiEntry &emoji) {
 
 std::vector<EmojiManager::EmojiEntry>
 EmojiManager::find_by_query(std::string query) {
-  std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+  auto to_lower = [](unsigned char c) { return std::tolower(c); };
+  std::transform(query.begin(), query.end(), query.begin(), to_lower);
   std::vector<WeightedEmoji> matched_emojis;
 
   std::vector<std::string> query_words;
@@ -198,8 +199,8 @@ EmojiManager::find_by_query(std::string query) {
   for (auto &e : emoji_db) {
     std::string desc = e.description;
     std::string kw = e.keywords;
-    std::transform(desc.begin(), desc.end(), desc.begin(), ::tolower);
-    std::transform(kw.begin(), kw.end(), kw.begin(), ::tolower);
+    std::transform(desc.begin(), desc.end(), desc.begin(), to_lower);
+    std::transform(kw.begin(), kw.end(), kw.begin(), to_lower);
 
     std::vector<std::string> kw_tokens;
     std::istringstream kw_stream(kw);

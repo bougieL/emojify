@@ -36,13 +36,27 @@ def parse_cldr_keywords(xml_path):
         for anno in root.findall(".//annotation"):
             if 'type' not in anno.attrib:
                 cp = anno.attrib['cp']
-                keywords_map[cp] = anno.text.strip().replace(' | ', ', ')
+                keywords_map[cp] = anno.text.strip()
     except FileNotFoundError:
         print(f"Warning: {xml_path} not found. Keywords will be empty.")
     return keywords_map
 
-def bake_emoji_binary(txt_path, xml_path, output_path):
-    keywords_map = parse_cldr_keywords(xml_path)
+def merge_keywords(*keyword_lists):
+    """Merge CLDR keyword lists (pipe-separated) into one, deduped."""
+    parts, seen = [], set()
+    for kws in keyword_lists:
+        if not kws:
+            continue
+        for token in kws.split('|'):
+            token = token.strip()
+            if token and token.lower() not in seen:
+                seen.add(token.lower())
+                parts.append(token)
+    return ' | '.join(parts)
+
+def bake_emoji_binary(txt_path, en_xml_path, zh_xml_path, output_path):
+    en_keywords = parse_cldr_keywords(en_xml_path)
+    zh_keywords = parse_cldr_keywords(zh_xml_path)
     line_re = re.compile(r'^\s*[^#]+;\s*fully-qualified\s*#\s*(\S+)\s+E\d+\.\d+\s+(.+)$')
 
     current_group = "Unknown"
@@ -77,12 +91,14 @@ def bake_emoji_binary(txt_path, xml_path, output_path):
         seen.add(base)
 
         tone_variants = variants.get(base, {})
+        cp_keywords = en_keywords.get(base, en_keywords.get(char, ""))
+        cp_zh_keywords = zh_keywords.get(base, zh_keywords.get(char, ""))
         emoji_entries.append({
             'char': char,
             'desc': desc,
             'group': group,
-            'keywords': keywords_map.get(base, keywords_map.get(char, "")),
-            'variants': tone_variants, 
+            'keywords': merge_keywords(cp_keywords, cp_zh_keywords),
+            'variants': tone_variants,
         })
 
     # Binary format per emoji:
@@ -116,4 +132,4 @@ def bake_emoji_binary(txt_path, xml_path, output_path):
     print(f"  {with_variants} with skin tone variants")
 
 if __name__ == "__main__":
-    bake_emoji_binary('emoji-test.txt', 'en.xml', 'emoji_data.bin')
+    bake_emoji_binary('emoji-test.txt', 'en.xml', 'zh.xml', 'emoji_data.bin')
